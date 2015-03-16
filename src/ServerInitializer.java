@@ -18,6 +18,14 @@ public class ServerInitializer {
 	public static void main(String[] args) {
 		System.out.println("SEVER START!");
 		
+		NioHandleMap handleMap = new NioHandleMap();
+		
+		NioEventHandler sayHelloHandler = new NioSayHelloEventHandler();
+		NioEventHandler sayUpdateProfileHandler = new NioUpdateProfileEventHandler();
+		
+		handleMap.put(sayHelloHandler.getHandle(), sayHelloHandler);
+		handleMap.put(sayUpdateProfileHandler.getHandle(), sayUpdateProfileHandler);
+		
 		// 고정 스레드 풀 생성 threadPoolSize 만큼의 스레드만 사용
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		
@@ -33,7 +41,7 @@ public class ServerInitializer {
 			listener.bind(new InetSocketAddress(PORT), backlog);
 			
 			// 비동기 IO 작업에 콜백 등록해두고 완료/실패시 CompletionHandler 호출해서 접속 결과 받음
-			listener.accept(listener, new Dispatcher());
+			listener.accept(listener, new Dispatcher(handleMap));
 			
 		} catch (IOException e) {
 			e.printStackTrace();
